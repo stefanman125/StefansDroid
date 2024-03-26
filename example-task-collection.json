@@ -1,0 +1,13 @@
+{
+    "id":"",
+    "title":"",
+    "description":"",
+    "location":"",
+    "category":"",
+    "startDate":1711149159,
+    "recurrence":{
+        "isRecurring": true,
+        "interval":10080,
+        "endDate":1713136359
+    }
+}
