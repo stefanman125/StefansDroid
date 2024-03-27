@@ -43,54 +43,63 @@ paths:
               - title
               - completed
             properties:
-              id:
-                type: integer
-                example: 0
-                description: Relative ID of the individual task. Used to index tasks within the collection.
-              title:
-                type: string
-                example: Buy Bread
-                description: Title of the task.
-              description:
-                type: string
-                example: Buy some bread while grocery shopping. Preferably something sourdough or baguette.
-                description: Description of the task.
-              location:
-                type: string
-                example: Best Bread Bakery, Vaughan, ON A1A 1A1
-                description: Location related to the task. Used to hyperlink a Maps location in a given task.
-              category:
-                type: string
-                example: Grocery
-                description: Category that the tasks belongs to. Used to organize tasks.
-              dueDate:
+              lastModified:
                 type: integer
                 example: 1711149159
-                description: Date that the task is "due". Used to organize time-sensitive tasks.
-              recurrence:
+                description: last modified
+              tasks:
                 type: array
                 items:
                   type: object
-                  properties: 
-                    recurrenceRange:
+                  properties:
+                    id:
+                      type: integer
+                      example: 0
+                      description: Relative ID of the individual task. Used to index tasks within the collection.
+                    title:
                       type: string
-                      enum:
-                        - noEnd
-                        - until
-                      example: noEnd
-                      description: Specifies how much the task will recur. `noEnd` means the task recur forever based on the `interval` value. `until` means the task will recur based on the `interval`, until the `endDate` is reached.
-                    interval:
+                      example: Buy Bread
+                      description: Title of the task.
+                    description:
+                      type: string
+                      example: Buy some bread while grocery shopping. Preferably something sourdough or baguette.
+                      description: Description of the task.
+                    location:
+                      type: string
+                      example: Best Bread Bakery, Vaughan, ON A1A 1A1
+                      description: Location related to the task. Used to hyperlink a Maps location in a given task.
+                    category:
+                      type: string
+                      example: Grocery
+                      description: Category that the tasks belongs to. Used to organize tasks.
+                    dueDate:
                       type: integer
-                      example: 10080
-                      description: The amount of minutes to wait until creating another task.
-                    endDate:
-                      type: integer
-                      example: 1713136359
-                      description: End date of the recurring task. Used when specifying when a recurring task should stop recurring.
-              completed:
-                type: boolean
-                example: false
-                description: Specifies if a task has been completed.
+                      example: 1711149159
+                      description: Date that the task is "due". Used to organize time-sensitive tasks.
+                    recurrence:
+                      type: array
+                      items:
+                        type: object
+                        properties: 
+                          recurrenceRange:
+                            type: string
+                            enum:
+                              - noEnd
+                              - until
+                            example: noEnd
+                            description: Specifies how much the task will recur. `noEnd` means the task recur forever based on the `interval` value. `until` means the task will recur based on the `interval`, until the `endDate` is reached.
+                          interval:
+                            type: integer
+                            example: 10080
+                            description: The time between each task in the recurrence in minutes.
+                          endDate:
+                            type: integer
+                            example: 1713136359
+                            description: End date of the recurring task. Used when specifying when a recurring task should stop recurring.
+                    completed:
+                      type: boolean
+                      example: false
+                      description: Specifies if a task has been completed.
 
       responses:
         200:
@@ -157,7 +166,7 @@ paths:
                     interval:
                       type: integer
                       example: 10080
-                      description: The amount of minutes to wait until creating another task.
+                      description: The time between each task in the recurrence in minutes.
                     endDate:
                       type: integer
                       example: 1713136359
