@@ -46,7 +46,7 @@ paths:
               lastModified:
                 type: integer
                 example: 1711149159
-                description: last modified
+                description: Date that the collection was last modified. Used for syncing.
               tasks:
                 type: array
                 items:
@@ -130,7 +130,7 @@ paths:
                lastModified:
                  type: integer
                  example: 1711149159
-                 description: last modified
+                 description: Date that the collection was last modified. Used for syncing.
                tasks:
                  type: array
                  items:
