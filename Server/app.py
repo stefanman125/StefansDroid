@@ -84,6 +84,8 @@ def verify_password(username, password):
         return username
 
 def __main__():
-    app.run(host="0.0.0.0", debug=False) 
+    # Uncomment this to run in a development environment
+    #app.run(host="0.0.0.0", debug=False) 
+    pass
 
 __main__()
