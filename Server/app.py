@@ -8,7 +8,7 @@ import re
 
 # -------------------- Globals --------------------
 
-collections_base_path = os.getcwd()+"/Server/Collections" # Absolute path containing the task collections
+collections_base_path = os.path.abspath(os.path.join(str(__file__), os.pardir))+"/Collections" # Absolute path containing the task collections
 app = Flask(__name__)
 password = "passwd" # API Auth Password
 auth = HTTPBasicAuth()
@@ -19,8 +19,10 @@ users = { "" : generate_password_hash(password) } # Leave username for blank
 @app.route('/tasks/<collectionId>', methods=['GET'])
 @auth.login_required
 def get_collection(collectionId):
-    if os.path.exists("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId)):
-        with open(path, 'r') as collection:
+    collection_exists = os.path.exists("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId))
+
+    if collection_exists:
+        with open("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId), 'r') as collection:
             data = json.load(collection)
         return make_response(jsonify(data), 200)
     else:
