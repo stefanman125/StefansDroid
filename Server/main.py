@@ -4,10 +4,11 @@ from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import json
+import re
 
 # -------------------- Globals --------------------
 
-collections_base_path = "./Collections" # Relative path containing the task collections
+collections_base_path = os.getcwd()+"/Server/Collections" # Absolute path containing the task collections
 app = Flask(__name__)
 password = "passwd" # API Auth Password
 auth = HTTPBasicAuth()
@@ -17,7 +18,7 @@ users = { "" : generate_password_hash(password) } # Leave username for blank
 
 @app.route('/tasks/<collectionId>', methods=['GET'])
 @auth.login_required
-def get_tasks(collectionId):
+def get_collection(collectionId):
     if os.path.exists("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId)):
         with open(path, 'r') as collection:
             data = json.load(collection)
@@ -25,45 +26,55 @@ def get_tasks(collectionId):
     else:
         return make_response("Collection does not exist.", 404)
 
-@app.route('/tasks/<collectionId>', methods=['POST'])
+@app.route('/tasks/<collectionId>', methods=['POST', 'PUT'])
 @auth.login_required
-def create_task(collectionId):
-    required_params = ['id', 'title', 'completed']
+def manage_collections(collectionId):
+    # Required parameters and value types
+    required_params = {'id': int, 'title': str, 'completed': bool}
     json_data = request.json
 
-    # Check if the required parameters are sent in the POST request body
-    for param in required_params:
+    # Check if the required parameters are sent in the POST request body, and if they follow the expected variable type
+    for param, expected_type in required_params.items():
         if param not in json_data:
-            return make_response("Missing required parameter: '{param}'".format(param=param), 400)
+            return make_response("Missing required parameter: {param}".format(param=param), 400)
+        elif not isinstance(json_data[param], expected_type):
+            return make_response("Parameter {param} must be a '{type}' type.".format(param=param, type=expected_type.__name__), 400)
     
-    # Check if the task already exists. Return 409 Conflict if it does
-    if (os.path.exists("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId))):
+    # Check if the task collection already exists
+    collection_exists = os.path.exists("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId))
+
+    # If the collection exists and the user is trying to create it, return a 409
+    if (collection_exists and request.method == "POST"):
         return make_response("Collection already exists.", 409)
-    
-    # Create the new task collection
-    with open("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId), 'w') as file:
-        json.dump(json_data, file)
-    return make_response("Collection created successfully.", 200)
 
-@app.route('/tasks/<collectionId>', methods=['PUT'])
-@auth.login_required
-def update_task(collectionId):
-    required_params = ['id', 'title', 'completed']
-    json_data = request.json
-    
-    # Check if the required parameters are sent in the POST request body
-    for param in required_params:
-        if param not in json_data:
-            return make_response("Missing required parameter: '{param}'".format(param=param), 400)
-    
-    # Check if the task exists before updating. Return 404 Not Found if it does not.
-    if not (os.path.exists("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId))):
+    # If the collection does not exist and the user is trying to update it, return a 404
+    elif (not collection_exists and request.method == "PUT"):
         return make_response("Collection does not exist.", 404)
+    
+    if (request.method == "POST"):
+        # Create the new task collection
+        with open("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId), 'w') as file:
+            json.dump(json_data, file)
+        return make_response("Collection created successfully.", 200)
+    
+    elif (request.method == "PUT"):
+        # Update the task collection
+        with open("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId), 'w') as file:
+            json.dump(json_data, file)
+        return make_response("Collection updated successfully.", 200)
+    
+@app.route('/tasks/<collectionId>', methods=['DELETE'])
+@auth.login_required
+def delete_collection(collectionId):
+    # Check if the task collection exists
+    collection_exists = os.path.exists("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId))
 
-    # Update the task collection
-    with open("{collections_base_path}/{collectionId}".format(collections_base_path=collections_base_path, collectionId=collectionId), 'w') as file:
-        json.dump(json_data, file)
-    return make_response("Collection updated successfully.", 200)
+    # If the collection does not exist and the user is trying to delete it, return a 404
+    if (not collection_exists and request.method == "DELETE"):
+        return make_response("Collection does not exist.", 404)
+    else:
+        os.remove("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId))
+        return make_response("Collection successfully deleted.", 200)
 
 @auth.verify_password
 def verify_password(username, password):

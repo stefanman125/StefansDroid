@@ -55,7 +55,7 @@ paths:
                     id:
                       type: integer
                       example: 0
-                      description: Relative ID of the individual task. Used to index tasks within the collection.
+                      description: Relative ID of the individual task. Used to index tasks within the collection. 
                     title:
                       type: string
                       example: Buy Bread
@@ -139,7 +139,7 @@ paths:
                      id:
                        type: integer
                        example: 0
-                       description: Relative ID of the individual task. Used to index tasks within the collection.
+                       description: Relative ID of the individual task. Used to index tasks within the collection. 
                      title:
                        type: string
                        example: Buy Bread
