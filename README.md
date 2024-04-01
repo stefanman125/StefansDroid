@@ -57,3 +57,9 @@ Once the server is up, add the server in the application. Each added server has 
 [img here showing a server being added in the android app]()
 
 ## Backup
+
+
+
+
+## Android App
+In the app folder you will find the project to build app or download the .apk
