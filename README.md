@@ -44,12 +44,18 @@ When the mobile app updates a task collection, it will decide to overwrite the l
 
 # Server
 
-## Configuration
+## Configuration/Installation
 
-Simple Tasks comes with a self-hostable server. Once configured, it will store all the task collections. To configure, simply run `main.py` on a given port and make sure that the web server is accessible from the associated devices.
+Simple Tasks comes with a self-hostable server. Once configured, it will store all task collections. The application is written with [Flask](https://flask.palletsprojects.com/en/3.0.x/), so it needs a production server to run in a stable environment. Gunicorn can be used.
 
 ```shell
-$ python3 main.py
+$ pip3 install gunicorn
+```
+
+Then, start the server on the desired port.
+
+```shell
+$ gunicorn -b 0.0.0.0:443 app:app
 ```
 
 Once the server is up, add the server in the application. Each added server has its own password that is used in a Basic Authentication header.
@@ -57,3 +63,7 @@ Once the server is up, add the server in the application. Each added server has 
 [img here showing a server being added in the android app]()
 
 ## Backup
+
+## Android App
+
+In the app folder you will find the project to build app. The APK will be added as a release as well.
