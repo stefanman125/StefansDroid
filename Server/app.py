@@ -10,6 +10,7 @@ import re
 
 collections_base_path = os.path.abspath(os.path.join(str(__file__), os.pardir))+"/Collections" # Absolute path containing the task collections
 app = Flask(__name__)
+app.json.sort_keys = False
 password = "passwd" # API Auth Password
 auth = HTTPBasicAuth()
 users = { "" : generate_password_hash(password) } # Leave username for blank
