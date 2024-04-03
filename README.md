@@ -46,7 +46,13 @@ When the mobile app updates a task collection, it will decide to overwrite the l
 
 ## Configuration/Installation
 
-Simple Tasks comes with a self-hostable server. Once configured, it will store all task collections. The application is written with [Flask](https://flask.palletsprojects.com/en/3.0.x/), so it needs a production server to run in a stable environment. Gunicorn can be used.
+Simple Tasks comes with a self-hostable server. Once configured, it will store all task collections. The application is written with [Flask](https://flask.palletsprojects.com/en/3.0.x/), so it needs Flask installed,
+
+```shell
+$ pip3 install -r requirements.txt
+```
+
+A production server should be used to run in a stable environment. For example, Gunicorn can be used.
 
 ```shell
 $ pip3 install gunicorn
