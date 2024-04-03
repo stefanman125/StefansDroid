@@ -115,7 +115,7 @@ paths:
            name: collectionId
            required: true
            type: string
-           description: Creates a task collection stored in the task storage server.
+           description: Updates a task collection stored in the task storage server.
          - in: body
            name: body
            description: JSON object containing the task collection.
