@@ -32,7 +32,8 @@ def get_collection(collectionId):
 @auth.login_required
 def manage_collections(collectionId):
     # Required parameters and value types
-    required_params = {'id': int, 'title': str, 'completed': bool}
+    required_params = {'lastModified': int, 'tasks': list} # Only required for creating empty collections
+    required_task_params = {'id': int, 'title': str, 'completed': bool} # Only required for tasks within the task list of a collection
     json_data = request.json
 
     # Check if the required parameters are sent in the POST request body, and if they follow the expected variable type
@@ -41,6 +42,14 @@ def manage_collections(collectionId):
             return make_response("Missing required parameter: {param}".format(param=param), 400)
         elif not isinstance(json_data[param], expected_type):
             return make_response("Parameter {param} must be a '{type}' type.".format(param=param, type=expected_type.__name__), 400)
+    
+    # Check if the required parameters are sent in each task body, and if they follow the expected value
+    for param, expected_type in required_task_params.items():
+        for task in json_data['tasks']:
+            if param not in task:
+                return make_response("Missing required task parameter: {param}".format(param=param), 400)
+            elif not isinstance(task[param], expected_type):
+                return make_response("Task Parameter {param} must be a '{type}' type.".format(param=param, type=expected_type.__name__), 400)
     
     # Check if the task collection already exists
     collection_exists = os.path.exists("{collections_base_path}/{collectionId}.json".format(collections_base_path=collections_base_path, collectionId=collectionId))
