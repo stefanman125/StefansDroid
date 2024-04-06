@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">Simple Tasks</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Simple Tasks</string>
+    <string name="nav_header_subtitle">https://github.com/stefanman125/simple-tasks</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_servers">Servers</string>
+    <string name="menu_preferences">Preferences</string>
+    <string name="menu_tasks">Tasks</string>
+
+    <!-- Servers menu -->
+    <string name="containerTextTLS">Uses TLS?</string>
+    <string name="containerEditTextNameHint">Custom Name</string>
+    <string name="containerEditTextIPHint">IP address or Hostname</string>
+    <string name="containerEditTextPassword">Password</string>
+
+    <!-- Task Template -->
+    <string name="taskContainerTextTitle">Title</string>
+    <string name="taskContainerTextDate">Date</string>
+    <string name="taskContainerTextDescription">Description</string>
+    <string name="taskContainerTextCategory">Category</string>
+    <string name="taskContainerTextComplete">Complete?</string>
+</resources>

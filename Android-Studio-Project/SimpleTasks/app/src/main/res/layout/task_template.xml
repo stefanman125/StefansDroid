@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/taskTemplateLayout">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/taskContainerBox"
+        android:layout_width="363dp"
+        android:layout_height="210dp"
+        app:cardBackgroundColor="@color/dark_gray"
+        app:cardCornerRadius="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.07"
+        app:layout_constraintWidth_percent="0.20">
+
+        <TextView
+            android:id="@+id/taskContainerTextTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="@string/taskContainerTextTitle"
+            android:textSize="30sp"
+            android:translationX="10dp"
+            android:translationY="0dp" />
+
+        <TextView
+            android:id="@+id/taskContainerTextComplete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="@string/taskContainerTextComplete"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:translationX="245dp"
+            android:translationY="47dp" />
+
+        <CheckBox
+            android:id="@+id/taskContainerCheckboxComplete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:buttonTint="@color/white"
+            android:translationX="316dp"
+            android:translationY="42dp" />
+
+        <TextView
+            android:id="@+id/taskContainerTextCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="@string/taskContainerTextCategory"
+            android:textSize="14sp"
+            android:translationX="260dp"
+            android:translationY="0dp" />
+
+        <TextView
+            android:id="@+id/taskContainerTextDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="@string/taskContainerTextDate"
+            android:textSize="12sp"
+            android:translationX="16dp"
+            android:translationY="45dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/black"
+            android:translationX="0dp"
+            android:translationY="80dp" />
+
+        <TextView
+            android:id="@+id/taskContainerTextDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="@string/taskContainerTextDescription"
+            android:textSize="16sp"
+            android:translationX="16dp"
+            android:translationY="80dp" />
+
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
