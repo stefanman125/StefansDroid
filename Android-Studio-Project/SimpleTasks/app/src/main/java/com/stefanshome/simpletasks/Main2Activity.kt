@@ -1,7 +1,6 @@
 package com.stefanshome.simpletasks
 
 import android.os.Bundle
-import android.view.Menu
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
@@ -52,11 +51,12 @@ class Main2Activity : AppCompatActivity() {
         ApiRequests().getTasks()
     }
 
+    /* When three dots on the top right are pressed
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main2, menu)
         return true
-    }
+    }*/
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main2)

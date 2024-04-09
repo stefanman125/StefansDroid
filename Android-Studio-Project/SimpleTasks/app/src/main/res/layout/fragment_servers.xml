@@ -24,7 +24,7 @@
     <androidx.cardview.widget.CardView
         android:id="@+id/containerBox"
         android:layout_width="363dp"
-        android:layout_height="210dp"
+        android:layout_height="280dp"
         app:cardBackgroundColor="@color/dark_gray"
         app:cardCornerRadius="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -79,12 +79,47 @@
             android:maxLines="1"/>
 
         <ImageView
+            android:id="@+id/containerImagePassword"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/baseline_password_24"
+            android:translationX="16dp"
+            android:translationY="146dp"
+            app:tint="@color/light_blue" />
+
+        <EditText
+            android:id="@+id/containerEditTextPassword"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:hint="@string/containerEditTextPassword"
+            android:inputType="textPassword"
+            android:maxLength="128"
+            android:padding="8dp"
+            android:textSize="20sp"
+            android:translationX="60dp"
+            android:translationY="140dp"
+            android:scrollHorizontally="true"
+            android:maxLines="1"/>
+
+        <ImageButton
+            android:id="@+id/containerImageButtonPasswordVisibility"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleX="1.5"
+            android:scaleY="1.5"
+            android:src="@drawable/baseline_visibility_24"
+            app:tint="@color/light_blue"
+            android:background="?android:selectableItemBackground"
+            android:translationX="307dp"
+            android:translationY="150dp" />
+
+        <ImageView
             android:id="@+id/containerImageTLS"
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:src="@drawable/baseline_https_24"
             android:translationX="16dp"
-            android:translationY="142dp"
+            android:translationY="202dp"
             app:tint="@color/light_blue" />
 
         <TextView
@@ -95,14 +130,14 @@
             android:text="@string/containerTextTLS"
             android:textSize="20sp"
             android:translationX="60dp"
-            android:translationY="140dp" />
+            android:translationY="200dp" />
 
         <Switch
             android:id="@+id/containerT"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:translationX="300dp"
-            android:translationY="148dp"
+            android:translationY="208dp"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
     </androidx.cardview.widget.CardView>
