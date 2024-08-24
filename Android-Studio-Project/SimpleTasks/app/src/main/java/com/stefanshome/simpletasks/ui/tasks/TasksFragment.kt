@@ -1,13 +1,15 @@
 package com.stefanshome.simpletasks.ui.tasks
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.stefanshome.simpletasks.R
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.stefanshome.simpletasks.ApiRequests
 import com.stefanshome.simpletasks.databinding.FragmentTasksBinding
 
 class TasksFragment : Fragment() {
@@ -44,10 +46,23 @@ class TasksFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Access the layouts root view by its ID
-        val taskTemplateLayout = view.findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.taskTemplateLayout)
+        val recyclerView = binding.RecyclerViewTasks
+        recyclerView.layoutManager = LinearLayoutManager(context)
 
-        // Hide by default
-        taskTemplateLayout.visibility = View.VISIBLE
+        val apiRequests = ApiRequests()
+        apiRequests.getCollection { collections ->
+            collections?.let {
+                Log.i("TasksFragment", "Received Collection")
+            } ?: run {
+                Log.i("TasksFragment", "Failed to retrieve Collections")
+            }
+        }
+
+        // TaskAdapter only want some elements of the task, not all of them because it wont be displaying all of them to the user. Only pass in the relevant parts.
+        val taskAdapter = TaskAdapter(emptyList())
+        recyclerView.adapter = taskAdapter
+
+        // Access the layouts root view by its ID
+        //val taskTemplateLayout = view.findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.taskTemplateLayout)
     }
 }

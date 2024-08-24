@@ -11,7 +11,7 @@ import re
 collections_base_path = os.path.abspath(os.path.join(str(__file__), os.pardir))+"/Collections" # Absolute path containing the task collections
 app = Flask(__name__)
 app.json.sort_keys = False
-password = "passwd" # API Auth Password
+password = "" # API Auth Password
 auth = HTTPBasicAuth()
 users = { "" : generate_password_hash(password) } # Leave username for blank
 
@@ -95,7 +95,7 @@ def verify_password(username, password):
 
 def __main__():
     # Uncomment this to run in a development environment
-    #app.run(host="0.0.0.0", debug=False) 
+    app.run(host="0.0.0.0", debug=False) 
     pass
 
 __main__()

@@ -12,6 +12,10 @@
                     android:icon="@drawable/baseline_article_24"
                     android:title="@string/menu_tasks" />
                 <item
+                    android:id="@+id/nav_feeds"
+                    android:icon="@drawable/baseline_article_24"
+                    android:title="@string/menu_feeds" />
+                <item
                     android:id="@+id/nav_servers"
                     android:icon="@drawable/baseline_cloud_24"
                     android:title="@string/menu_servers" />
@@ -19,6 +23,10 @@
                     android:id="@+id/nav_preferences"
                     android:icon="@drawable/baseline_build_24"
                     android:title="@string/menu_preferences" />
+                <item
+                    android:id="@+id/nav_logs"
+                    android:icon="@drawable/baseline_build_24"
+                    android:title="@string/menu_logs" />
             </menu>
         </item>
 

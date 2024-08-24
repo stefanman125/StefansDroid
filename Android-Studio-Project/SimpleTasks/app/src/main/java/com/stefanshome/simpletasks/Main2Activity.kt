@@ -1,6 +1,7 @@
 package com.stefanshome.simpletasks
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
@@ -14,6 +15,9 @@ import com.stefanshome.simpletasks.R.id.nav_preferences
 import com.stefanshome.simpletasks.R.id.nav_servers
 import com.stefanshome.simpletasks.R.id.nav_tasks
 import com.stefanshome.simpletasks.databinding.ActivityMain2Binding
+import com.stefanshome.simpletasks.ui.tasks.CollectionBody
+import com.stefanshome.simpletasks.ui.tasks.TaskBody
+import com.stefanshome.simpletasks.ui.tasks.TaskRecurrence
 
 class Main2Activity : AppCompatActivity() {
 
@@ -47,8 +51,15 @@ class Main2Activity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        // Get Tasks when app is open
-        ApiRequests().getTasks()
+        // Get all collections when app is open
+        val collection = ApiRequests().getCollection { collections ->
+            collections?.let {
+                Log.i("GetCollectionsAtStart", "Received Collection")
+            } ?: run {
+                Log.i("GetCollectionsAtStart", "Failed to retrieve Collections")
+            }
+        }
+        Log.i("Main2Activity", "Collection var: $collection")
     }
 
     /* When three dots on the top right are pressed

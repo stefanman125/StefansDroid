@@ -1,0 +1,26 @@
+# This project was generated with 0.3.19 using template: https://github.com/beeware/briefcase-template@v0.3.19
+[tool.briefcase]
+project_name = "StefansHome"
+bundle = "ca.stefanshome"
+version = "0.0.1"
+url = "https://stefanshome.ca/app"
+license.file = "LICENSE"
+author = "Stefan Tomovich"
+author_email = "stefant99@gmail.com"
+
+[tool.briefcase.app.stefanshome]
+formal_name = "StefansHome"
+description = "My first application"
+long_description = """More details about the app should go here.
+"""
+sources = [
+    "src/stefanshome",
+]
+requires = [
+    "kivy",
+    "kivymd"
+]
+test_sources = [
+    "tests",
+]
+

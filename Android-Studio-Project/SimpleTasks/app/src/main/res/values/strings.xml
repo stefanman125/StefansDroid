@@ -10,6 +10,8 @@
     <string name="menu_servers">Servers</string>
     <string name="menu_preferences">Preferences</string>
     <string name="menu_tasks">Tasks</string>
+    <string name="menu_feeds">Feeds</string>
+    <string name="menu_logs">Logs</string>
 
     <!-- Servers menu -->
     <string name="containerTextTLS">Uses TLS?</string>

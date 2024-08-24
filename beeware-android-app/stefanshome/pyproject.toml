@@ -12,6 +12,8 @@ author_email = "stefant99@gmail.com"
 formal_name = "StefansHome"
 description = "An all-in-one application that has all the features that Stefan wants to use daily."
 long_description = """More details about the app should go here.
+icon = "icons/stefanshome"
+splash_background_color = "#D3E6F5"
 """
 sources = [
     "src/stefanshome",
