@@ -7,6 +7,7 @@ import time
 import textwrap
 from pathlib import Path
 import json
+from datetime import datetime
 
 # Hardcoded path that I should probably change, but im okay with the idea of the collections being somewhere in Documents
 save_path = "/storage/emulated/0/Documents/StefansHome/collections" # No trailing slash
@@ -25,18 +26,10 @@ class StefansHome(toga.App):
         # Clear current view
         self.clear_all_views()
 
-        task = self.get_collection(collection_name)["tasks"][self.get_index("task", task_id, self.get_collection(collection_name))]
+        task = self.get_collection(collection_name)["tasks"][self.get_index("tasks", task_id, self.get_collection(collection_name))]
 
         # Old Task attributes
         old_title = task["title"]
-
-        # Used to recycle the view for creating new, and editing old tasks
-        if (mode == "edit"):
-            mode = "Editing Task"
-        elif (mode == "new"):
-            mode = "New Task"
-        else:
-            print("ERROR: draw_edit_task not given a proper mode")
 
         label_title = toga.Label(mode, style=Pack(font_size=28)) # Title
         spacer = toga.Box(style=Pack(background_color=rgb(237, 237, 237), height=75)) # Spacer
@@ -47,6 +40,15 @@ class StefansHome(toga.App):
         ], style=Pack(
             direction=ROW
         ))
+
+        # Button remove removes the task
+        button_remove = toga.Button("Delete",
+            on_press=lambda widget:
+                self.remove_item_button("tasks", task["id"]),
+            style=Pack(
+                background_color=rgb(255, 0, 0)
+            )
+        )
 
         # Button submit includes submitting the task ID of the task being modified, all the attributes of the new task in a dictionary, and the old collection
         button_submit = toga.Button("Submit", 
@@ -60,6 +62,7 @@ class StefansHome(toga.App):
         ) # Cancel any pending changes
 
         button_box = toga.Box(children=[
+            button_remove,
             button_submit,
             button_cancel
         ], style=Pack(direction=ROW))
@@ -78,28 +81,46 @@ class StefansHome(toga.App):
 
         self.main_box.add(edit_task)
 
+    # Handles the "delete" button press in the edit task view
+    def remove_item_button(self, taskorfeed, id):
+        collection = self.get_collection(collection_name)
+        collection[taskorfeed] = [item for item in collection[taskorfeed] if item['id'] != id]
+        collection["lastModified"] = int(time.time())
+        print("Removed {taskorfeed} with ID {id}".format(taskorfeed=taskorfeed, id=id))
+        self.save_data(collection, collection_name)
+        self.clear_all_views() 
+        self.draw_main_view()
+
     # Handles the "cancel" button press in the edit task view
     def edit_cancel_button(self):
         self.clear_all_views()
         self.draw_main_view()
 
     # Handles the "submit" button press in the edit task view 
-    def edit_submit_button(self, taskorfeed, id, new_taskorfeed, collection):
-        self.change_item(taskorfeed, id, new_taskorfeed, collection)
+    def edit_submit_button(self, taskorfeed, new_id, new_item_dict, collection):
+        self.change_item(taskorfeed, new_id, new_item_dict, collection)
         self.clear_all_views() 
         self.draw_main_view()
 
     # Returns the index of the task or feed in the collection based on the ID, since they are not ordered by ID (or at least, I don't imagine they will be at the time of writing this)
     def get_index(self, taskorfeed, id, collection):
-        for item in collection["{taskorfeed}s".format(taskorfeed=taskorfeed)]:
+        for item in collection["{taskorfeed}".format(taskorfeed=taskorfeed)]:
             if item["id"] == id:
-                return(collection["{taskorfeed}s".format(taskorfeed=taskorfeed)].index(item))
+                return(collection["{taskorfeed}".format(taskorfeed=taskorfeed)].index(item))
 
     # This function is responsible for changing task data. Depending on the ID of the changed task, it either changes an existing task, or creates a new one.
-    def change_item(self, taskorfeed, id, new_taskorfeed, collection):
-        collection["{taskorfeed}s".format(taskorfeed=taskorfeed)][self.get_index(taskorfeed, id, collection)] = new_taskorfeed 
-        collection["lastModified"] = int(time.time())
-        self.save_data(collection, collection_name)
+    def change_item(self, taskorfeed, id, new_item_dict, collection):
+        # If the task/feed does not exist in the collection
+        if not any(d["id"] == id for d in collection[taskorfeed]):
+            self.main_window.info_dialog("Info", "Creating new {item}".format(item=taskorfeed))
+            collection[taskorfeed].append(new_item_dict)
+            self.save_data(collection, collection_name)
+        # Otherwise, change the existing one
+        else:
+            self.main_window.info_dialog("Info", "Changing old {item}".format(item=taskorfeed))
+            collection[taskorfeed][self.get_index(taskorfeed, id, collection)] = new_item_dict 
+            collection["lastModified"] = int(time.time())
+            self.save_data(collection, collection_name)
 
     # Saves collection to file being currently used to store collection on the device's storage
     def save_data(self, collection, collection_name):
@@ -109,6 +130,8 @@ class StefansHome(toga.App):
             self.main_window.info_dialog("Success", "Collection Successfully saved to: '{path}/{collection_name}.json'".format(path=save_path, collection_name=collection_name))
         except Exception as e:
             self.main_window.info_dialog("Error", "Could not save collection to the local device with the following error:\n{error}".format(error=e))
+        self.clear_all_views()
+        self.draw_main_view()
 
     # Main view of the app
     def draw_main_view(self):
@@ -151,15 +174,15 @@ class StefansHome(toga.App):
         return toga.Divider(direction="HORIZONTAL", style=Pack(height=2, flex=1, background_color=rgb, padding=(10, 0, 0, 0)))
 
     # Draw a feed
-    def draw_feed(self, feed):
-        if (len(feed["title"]) > 20):
-            feed_title = feed["title"][:20] + ".."
+    def draw_feed(self, feed_attributes):
+        if (len(feed_attributes["title"]) > 20):
+            feed_title = feed_attributes["title"][:20] + ".."
         else:
-            feed_title = feed["title"]
+            feed_title = feed_attributes["title"]
 
-        feed_date_last_updated = "{date} ({tz})".format(date=time.strftime('%Y-%m-%d %I:%M %p', time.localtime(feed["dateLastUpdated"])), tz=time.tzname[0])
+        feed_date_last_updated = "{date} ({tz})".format(date=time.strftime('%Y-%m-%d %I:%M %p', time.localtime(feed_attributes["dateLastUpdated"])), tz=time.tzname[0])
 
-        feed_update_mechanism = feed["updateMechanism"]
+        feed_update_mechanism = list(feed_attributes.items())[-1][0] # Update mechanism doesn't have its own key
 
         title_date_option_box = toga.Box(children=[
             toga.Label("{feed_title}".format(feed_title=feed_title), style=Pack(font_size=20, color=rgb(0, 0, 0), padding=(2, 0, 2, 5))),
@@ -167,8 +190,8 @@ class StefansHome(toga.App):
             ], style=Pack(direction=COLUMN))
 
         category_box = toga.Box(children=[
-            toga.Label("{feed_category}".format(feed_category=feed["category"]), style=Pack(font_size=12, color=rgb(0, 0, 0), padding=(10, 0, 10, 150-len(feed["category"])), alignment='right', flex=1)),
-            toga.Switch(text="Caught up?", value=feed["isUserUpToDate"], style=Pack(color=rgb(0, 0, 0), padding=(0, 20, 0, 40)))
+            toga.Label("{feed_category}".format(feed_category=feed_attributes["category"]), style=Pack(font_size=12, color=rgb(0, 0, 0), padding=(10, 0, 10, 150-len(feed_attributes["category"])), alignment='right', flex=1)),
+            toga.Switch(text="Caught up?", value=feed_attributes["isUserUpToDate"], on_change=lambda widget: self.change_switch_state(widget, "feeds", feed_attributes["id"], feed_attributes, self.get_collection(collection_name)), style=Pack(color=rgb(0, 0, 0), padding=(0, 20, 0, 40)))
         ], style=Pack(direction=COLUMN))
 
         top_half_box = toga.Box(children=[
@@ -180,12 +203,12 @@ class StefansHome(toga.App):
 
         button_edit = toga.Button("Edit", 
             on_press=lambda widget: 
-                self.draw_edit_feed(feed["id"], "edit")        
+                self.draw_edit_feed(feed_attributes["id"], "edit")        
         ) 
 
         button_go_to_url = toga.Button("Go to URL",
             on_press=lambda widget:
-                self.open_url_in_browser(feed["url"])
+                self.open_url_in_browser(feed_attributes["url"])
         )
 
         feed_box = toga.Box(children=[
@@ -209,18 +232,10 @@ class StefansHome(toga.App):
         # Clear current view
         self.clear_all_views()
 
-        feed = self.get_collection(collection_name)["feeds"][self.get_index("feed", feed_id, self.get_collection(collection_name))]
+        feed = self.get_collection(collection_name)["feeds"][self.get_index("feeds", feed_id, self.get_collection(collection_name))]
 
         # Old Task attributes
         old_title = feed["title"]
-
-        # Used to recycle the view for creating new, and editing old tasks
-        if (mode == "edit"):
-            mode = "Editing Feed"
-        elif (mode == "new"):
-            mode = "New Feed"
-        else:
-            print("ERROR: draw_edit_feed() not given a proper mode")
 
         label_title = toga.Label(mode, style=Pack(font_size=28)) # Title
         spacer = toga.Box(style=Pack(background_color=rgb(237, 237, 237), height=75)) # Spacer
@@ -232,10 +247,19 @@ class StefansHome(toga.App):
             direction=ROW
         ))
 
+        # Button remove removes the feed
+        button_remove = toga.Button("Delete",
+            on_press=lambda widget:
+                self.remove_item_button("feeds", feed["id"]),
+            style=Pack(
+                background_color=rgb(255, 0, 0)
+            )
+        )
+
         # Button submit includes submitting the task ID of the task being modified, all the attributes of the new task in a dictionary, and the old collection
         button_submit = toga.Button("Submit", 
             on_press=lambda widget: 
-                self.edit_submit_button("feed", feed["id"], {"id": feed_id, "title": input_new_title.value, "category": feed["category"], "url": feed["url"], "dateLastUpdated": feed["dateLastUpdated"], "isUserUpToDate": feed["isUserUpToDate"], "updateMechanism": feed["updateMechanism"]}, self.get_collection(collection_name)),
+                self.edit_submit_button("feeds", feed["id"], {"id": feed_id, "title": input_new_title.value, "category": feed["category"], "url": feed["url"], "dateLastUpdated": feed["dateLastUpdated"], "isUserUpToDate": feed["isUserUpToDate"], "updateMechanism": feed["updateMechanism"]}, self.get_collection(collection_name)),
         ) # Submit changes. `lambda widget:` added to prevent the button being automatically pressed on startup, which happened if I didn't have that lambda code there.
 
         button_cancel = toga.Button("Cancel", 
@@ -244,6 +268,7 @@ class StefansHome(toga.App):
         ) # Cancel any pending changes
 
         button_box = toga.Box(children=[
+            button_remove,
             button_submit,
             button_cancel
         ], style=Pack(direction=ROW))
@@ -264,8 +289,16 @@ class StefansHome(toga.App):
 
     # Open URL in browser todo
     def open_url_in_browser(self, url):
-        print("Going to URL: "+url)
-        pass
+        print("Copying URL: "+url)
+        # Todo using Kivy
+
+    def change_switch_state(self, widget, taskorfeed, id, new_item_dict, collection):
+        match taskorfeed:
+            case "tasks":
+                new_item_dict["completed"] = widget.value
+            case "feeds":
+                new_item_dict["isUserUpToDate"] = widget.value
+        self.change_item(taskorfeed, id, new_item_dict, collection)
 
     # View used for seeing tasks filtered by date, using an optionBox as a parent box
     def draw_task_view(self, collection):
@@ -287,14 +320,14 @@ class StefansHome(toga.App):
             if (task["dueDate"] == 0): # Check if any tasks have no due date
                 date_nodate.add(self.draw_task(task))
                 date_nodate.add(self.draw_divider(rgb(255, 255, 255)))
-            elif (task["dueDate"] - current_date_epoch < 0): # Check if any tasks are overdue
+            elif (task["dueDate"] - current_date_epoch < 0 and task["completed"] == False): # Check if any tasks are overdue
                 date_overdue.add(self.draw_task(task))
                 date_overdue.add(self.draw_divider(rgb(255, 255, 255)))
                 overdue_tasks += 1
-            elif (task["dueDate"] - current_date_epoch <= 604800): # Check if any tasks are due in 7 days
+            elif (task["dueDate"] - current_date_epoch <= 604800 and task["completed"] == False): # Check if any tasks are due in 7 days
                 date_1weeks.add(self.draw_task(task))
                 date_1weeks.add(self.draw_divider(rgb(255, 255, 255)))
-                if (task["dueDate"] - current_date_epoch <= 86400): # Check if any tasks are due today
+                if (task["dueDate"] - current_date_epoch <= 86400 and task["completed"] == False): # Check if any tasks are due today
                     date_today.add(self.draw_task(task))
                     date_today.add(self.draw_divider(rgb(255, 255, 255)))
 
@@ -315,19 +348,19 @@ class StefansHome(toga.App):
         return(date_option_box)
     
     # Takes task dictionary stored in JSON response
-    def draw_task(self, taskAttributes):
+    def draw_task(self, task_attributes):
 
         # Checks if a due date is set. If not, show no date
-        if (taskAttributes["dueDate"] == 0):
+        if (task_attributes["dueDate"] == 0):
             task_due_date = "No Due Date"
         else:
-            task_due_date = "{date} ({tz})".format(date=time.strftime('%Y-%m-%d %I:%M %p', time.localtime(taskAttributes["dueDate"])), tz=time.tzname[0])
+            task_due_date = "{date} ({tz})".format(date=time.strftime('%Y-%m-%d %I:%M %p', time.localtime(task_attributes["dueDate"])), tz=time.tzname[0])
 
         # Checks if the title is too long. If so, truncate.
-        if (len(taskAttributes["title"]) > 20):
-            task_title = taskAttributes["title"][:20] + ".."
+        if (len(task_attributes["title"]) > 20):
+            task_title = task_attributes["title"][:20] + ".."
         else:
-            task_title = taskAttributes["title"]
+            task_title = task_attributes["title"]
 
         title_date_option_box = toga.Box(children=[
             toga.Label("{task_title}".format(task_title=task_title), style=Pack(font_size=20, color=rgb(0, 0, 0), padding=(2, 0, 2, 5))),
@@ -335,8 +368,8 @@ class StefansHome(toga.App):
             ], style=Pack(direction=COLUMN))
 
         category_box = toga.Box(children=[
-            toga.Label("{task_category}".format(task_category=taskAttributes["category"]), style=Pack(font_size=12, color=rgb(0, 0, 0), padding=(10, 0, 10, 150-len(taskAttributes["category"])), alignment='right', flex=1)),
-            toga.Switch(text="Complete?", value=taskAttributes["completed"], style=Pack(color=rgb(0, 0, 0), padding=(0, 20, 0, 80-len(task_due_date))))
+            toga.Label("{task_category}".format(task_category=task_attributes["category"]), style=Pack(font_size=12, color=rgb(0, 0, 0), padding=(10, 0, 10, 150-len(task_attributes["category"])), alignment='right', flex=1)),
+            toga.Switch(text="Complete?", value=task_attributes["completed"], style=Pack(color=rgb(0, 0, 0), padding=(0, 20, 0, 80-len(task_due_date))), on_change=lambda widget: self.change_switch_state(widget, "tasks", task_attributes["id"], task_attributes, self.get_collection(collection_name)))
         ], style=Pack(direction=COLUMN))
 
         top_half_box = toga.Box(children=[
@@ -347,14 +380,14 @@ class StefansHome(toga.App):
         ))
 
         # Some quick logic that truncates any characters over the 200 character limit, so that it fits in the task view
-        if (len(taskAttributes["description"]) > 200):
-            task_description = taskAttributes["description"][:200] + "..."
+        if (len(task_attributes["description"]) > 200):
+            task_description = task_attributes["description"][:200] + "..."
         else:
-            task_description = taskAttributes["description"]
+            task_description = task_attributes["description"]
 
         button_edit = toga.Button("Edit", 
             on_press=lambda widget: 
-                self.draw_edit_task(taskAttributes["id"], "edit")        
+                self.draw_edit_task(task_attributes["id"])        
         ) 
 
         task_box = toga.Box(children=[
@@ -520,10 +553,10 @@ class StefansHome(toga.App):
 
         button_box = toga.Box(children=[
         toga.Button("Feed", 
-            on_press=lambda widget: self.draw_add_item("Feed")
+            on_press=lambda widget: self.draw_add_item("feeds")
             ),
         toga.Button("Task",
-            on_press=lambda widget: self.draw_add_item("Task")
+            on_press=lambda widget: self.draw_add_item("tasks")
             )
         ], style=Pack(
             direction=COLUMN, flex=1
@@ -539,10 +572,28 @@ class StefansHome(toga.App):
 
         self.main_box.add(item_selection_box)
 
+    # Gets a new id by iterating through all the existing tasks/feeds, and then returning one higher
+    def get_new_id(self, feed_or_task):
+        largest_id = 0
+        for item in (self.get_collection(collection_name)[feed_or_task]):
+            if (item["id"] > largest_id):
+                largest_id = item["id"]
+        largest_id += 1
+        return largest_id
+
+    # Assumes new item is being added
     def draw_add_item(self, feed_or_task):
         self.clear_all_views()
 
-        add_item_title = toga.Label("Create a new {item}".format(item=feed_or_task), style=Pack(font_size=26))
+        new_id = self.get_new_id(feed_or_task)
+
+        match feed_or_task:
+            case "tasks":
+                item = "Task"
+            case "feeds":
+                item = "Feed"
+
+        add_item_title = toga.Label("Create a new {item}".format(item=item), style=Pack(font_size=26))
 
         # Parent box
         add_item_attributes_box = toga.Box(children=[], style=Pack(
@@ -551,7 +602,7 @@ class StefansHome(toga.App):
         ))
 
         # Title
-        title_input = toga.TextInput(value="", style=Pack(flex=1))
+        title_input = toga.TextInput(style=Pack(flex=1))
         title_box = toga.Box(children=[
             toga.Label("Title", style=Pack(font_size=16, padding=(5, 0, 0, 0))),
             title_input
@@ -563,7 +614,7 @@ class StefansHome(toga.App):
         add_item_attributes_box.add(title_box)
 
         # Category
-        category_input = toga.TextInput(value="", style=Pack(flex=1))
+        category_input = toga.TextInput(style=Pack(flex=1))
         category_box = toga.Box(children=[
             toga.Label("Category", style=Pack(font_size=16, padding=(5, 0, 0, 0))),
             category_input
@@ -576,9 +627,9 @@ class StefansHome(toga.App):
 
         # Draw feed or task attributes depending on button pressed in draw_item_selection view
         match feed_or_task:
-            case "Feed":
+            case "feeds":
                 # URL
-                url_input = toga.TextInput(value="", style=Pack(flex=1))
+                url_input = toga.TextInput(style=Pack(flex=1))
                 url_box = toga.Box(children=[
                     toga.Label("URL", style=Pack(font_size=16, padding=(5, 0, 0, 0))),
                     url_input
@@ -591,11 +642,11 @@ class StefansHome(toga.App):
 
                 # Update Mechanism
                 update_mechanism_select = toga.Selection(items=[
-                    "Web Page Checksum", 
-                    "Last-Modified HTTP Header", 
-                    "document.lastModified JS Function", 
-                    "HTML Element Regex"
-                    ], style=Pack(
+                    { "type": "Web Page Checksum", "value": "checksum" }, 
+                    { "type": "Last-Modified HTTP Header", "value": "lastModifiedHttpHeader" }, 
+                    { "type": "document.lastModified JS Function", "value": "documentLastModifiedJs" }, 
+                    { "type": "HTML Element Regex", "value": "htmlRegex" }
+                    ], accessor="type", style=Pack(
                         flex=1
                     ))
                 update_mechanism_box = toga.Box(children=[
@@ -608,27 +659,13 @@ class StefansHome(toga.App):
                 ))
                 add_item_attributes_box.add(update_mechanism_box)
 
-                match update_mechanism_select.value:
-                    case "Web Page Checksum":
-                        update_mechanism = "checksum"
-                    case "Last-Modified HTTP Header":
-                        update_mechanism = "lastModifiedHttpHeader"
-                    case "document.lastModified JS Function":
-                        update_mechanism = "documentLastModifiedJs"
-                    case "HTML Element Regex":
-                        update_mechanism = "htmlRegex"
+                # Submit button with function for adding a new feed
+                submit_button = toga.Button("Submit", 
+                on_press=lambda widget: self.edit_submit_button(feed_or_task, new_id, {"id": new_id, "title": title_input.value, "category": category_input.value, "url": url_input.value, "dateLastUpdated": int(time.time()), "isUserUpToDate": True, str(update_mechanism_select.value.value): ""}, self.get_collection(collection_name)),
+                style=Pack(flex=1)
+                )
 
-                feed_or_task_dict = {
-                    "id": 3,
-                    "title": title_input.value,
-                    "category": category_input.value,
-                    "url": url_input.value,
-                    "dateLastUpdated": int(time.time()),
-                    "isUserUpToDate": true,
-                    str(update_mechanism): ""
-                }
-
-            case "Task":
+            case "tasks":
                 # Description
                 description_input = toga.TextInput(value="", style=Pack(flex=1))
                 description_box = toga.Box(children=[
@@ -641,8 +678,8 @@ class StefansHome(toga.App):
                 ))
                 add_item_attributes_box.add(description_box)
 
-                # Description
-                location_input = toga.TextInput(value="", style=Pack(flex=1))
+                # Location
+                location_input = toga.MapView(style=Pack(flex=1))
                 location_box = toga.Box(children=[
                     toga.Label("Location", style=Pack(font_size=16, padding=(5, 0, 0, 0))),
                     location_input
@@ -654,26 +691,17 @@ class StefansHome(toga.App):
                 add_item_attributes_box.add(location_box)
                 
                 # Due Date
-                due_date_switch = toga.Switch(text="Has a due date?")
-                due_date_switch_box = toga.Box(children=[
-                    due_date_switch
-                ], style=Pack(
-                    direction=ROW,
-                    padding=(0, 0, 0, 5),
-                    flex=1
-                ))
-                due_date_value = toga.TextInput(value="", style=Pack(flex=1))
-                due_date_value_box = toga.Box(children=[
+                due_date_input = toga.DateInput(style=Pack(flex=1))
+                due_date_input_box = toga.Box(children=[
                     toga.Label("Due Date", style=Pack(font_size=16, padding=(5, 0, 0, 0))),
-                    due_date_value
+                    due_date_input
                 ], style=Pack(
                     direction=ROW,
                     padding=(0, 0, 0, 5),
                     flex=1
                 ))
                 due_date_box = toga.Box(children=[
-                    due_date_switch_box,
-                    due_date_value_box
+                    due_date_input_box
                 ], style=Pack(
                     direction=COLUMN,
                     padding=(0, 0, 0, 5),
@@ -713,11 +741,15 @@ class StefansHome(toga.App):
                 ))
                 add_item_attributes_box.add(recurrence_end_date_box)
 
-        button_box = toga.Box(children=[
-            toga.Button("Submit", 
-                on_press=lambda widget: self.edit_submit_button(feed_or_task_select.value, feed["id"], {"id": feed_id, "title": input_new_title.value, "category": feed["category"], "url": feed["url"], "dateLastUpdated": feed["dateLastUpdated"], "isUserUpToDate": feed["isUserUpToDate"], "updateMechanism": feed["updateMechanism"]}, self.get_collection(collection_name)),
+                print(due_date_input.value)
+                # Submit button with function for adding a new task
+                submit_button = toga.Button("Submit", 
+                on_press=lambda widget: self.edit_submit_button(feed_or_task, new_id, {"id": new_id, "title": title_input.value, "description": description_input.value, "location": location_input.value, "category": category_input.value, "dueDate": int(datetime.strptime(str(due_date_input.value), "%Y-%m-%d").timestamp()), "recurrence": {"recurrenceRange": "None", "interval": 0, "endDate": 0}, "completed": False }, self.get_collection(collection_name)),
                 style=Pack(flex=1)
-                ),
+                )
+
+        button_box = toga.Box(children=[
+            submit_button,
             toga.Button("Cancel",
                 on_press=lambda widget: self.edit_cancel_button(),
                 style=Pack(flex=1)
@@ -738,7 +770,7 @@ class StefansHome(toga.App):
 
         self.main_box.add(add_item_parent_box)
 
-    def startup(self) :
+    def startup(self):
         # Create path to save collection on local device if it doesn't already exist
         Path(save_path).mkdir(parents=True, exist_ok=True)
 
