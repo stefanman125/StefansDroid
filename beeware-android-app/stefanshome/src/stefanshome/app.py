@@ -462,7 +462,7 @@ class StefansHome(toga.App):
                 local_collection = file.read()
                 return json.loads(local_collection)
         except FileNotFoundError as e:
-            self.main_window.info_dialog("Error: {error}".format(error=e))
+            self.main_window.info_dialog("Error", "{error}".format(error=e))
             self.create_new_collection(collection_name)
             self.main_window.info_dialog("Info", "'{collection_name}' not found on local device, so it was created.".format(collection_name=collection_name))
             with open("{collection_save_path}/{collection_name}.json".format(collection_save_path=collection_save_path, collection_name=collection_name), 'r+') as file:
