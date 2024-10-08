@@ -1,105 +1,140 @@
-swagger: "2.0"
+openapi: "3.0.0"
 info:
-  title: Sample API
+  title: StefansDroid API
   description: API description in Markdown.
   version: 1.0.0
 
-host: api.example.com
-basePath: /v1
-schemes:
-  - https
+servers:
+  - url: https://api.example.com/
 
 paths:
-  /tasks/{collectionId}:
+  /{collectionId}:
     get:
-      summary: Returns a task collection by ID.
+      summary: Returns a collection by ID.
       parameters:
         - in: path
           name: collectionId
           required: true
-          type: string
-          description: Gets a task collection stored in the task storage server.
+          schema:
+            type: string
+          description: Retrieves a collection stored on the server.
       responses:
         200:
           description: OK
         404:
           description: Not Found
     post:
-      summary: Creates a task collection.
+      summary: Creates a collection.
       parameters:
         - in: path
           name: collectionId
           required: true
-          type: string
-          description: Creates a task collection stored in the task storage server.
-        - in: body
-          name: body
-          description: JSON object containing the task collection.
-          required: true
           schema:
-            type: object  # Define your JSON object schema here
-            required:
-              - id
-              - title
-              - completed
-            properties:
-              lastModified:
-                type: integer
-                example: 1711149159
-                description: Date that the collection was last modified. Used for syncing.
-              tasks:
-                type: array
-                items:
-                  type: object
+            type: string
+          description: Creates a collection stored on the server.
+      requestBody:  
+        description: JSON object containing the collection.
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  required:
+                    - id
+                    - title
+                    - completed
                   properties:
-                    id:
-                      type: integer
-                      example: 0
-                      description: Relative ID of the individual task. Used to index tasks within the collection. 
-                    title:
-                      type: string
-                      example: Buy Bread
-                      description: Title of the task.
-                    description:
-                      type: string
-                      example: Buy some bread while grocery shopping. Preferably something sourdough or baguette.
-                      description: Description of the task.
-                    location:
-                      type: string
-                      example: Best Bread Bakery, Vaughan, ON A1A 1A1
-                      description: Location related to the task. Used to hyperlink a Maps location in a given task.
-                    category:
-                      type: string
-                      example: Grocery
-                      description: Category that the tasks belongs to. Used to organize tasks.
-                    dueDate:
+                    lastModified:
                       type: integer
                       example: 1711149159
-                      description: Date that the task is "due". Used to organize time-sensitive tasks.
-                    recurrence:
+                      description: Date that the collection was last modified. Used for syncing.
+                    tasks:
                       type: array
                       items:
                         type: object
-                        properties: 
-                          recurrenceRange:
+                        properties:
+                          id:
+                            type: integer
+                            example: 0
+                            description: Relative ID of the individual task. Used to index tasks within the collection.
+                          title:
                             type: string
-                            enum:
-                              - noEnd
-                              - until
-                            example: noEnd
-                            description: Specifies how much the task will recur. `noEnd` means the task recur forever based on the `interval` value. `until` means the task will recur based on the `interval`, until the `endDate` is reached.
-                          interval:
+                            example: Buy Bread
+                            description: Title of the task.
+                          description:
+                            type: string
+                            example: Buy some bread while grocery shopping. Preferably something sourdough or baguette.
+                            description: Description of the task.
+                          location:
+                            type: string
+                            example: Best Bread Bakery, Vaughan, ON A1A 1A1
+                            description: Location related to the task. Used to hyperlink a Maps location in a given task.
+                          category:
+                            type: string
+                            example: Grocery
+                            description: Category that the tasks belong to. Used to organize tasks.
+                          dueDate:
                             type: integer
-                            example: 10080
-                            description: The time between each task in the recurrence in minutes.
-                          endDate:
+                            example: 1711149159
+                            description: Date that the task is "due". Used to organize time-sensitive tasks.
+                          recurrence:
+                            type: object
+                            properties:
+                              recurrenceRange:
+                                type: string
+                                enum:
+                                  - none
+                                  - noEnd
+                                  - until
+                                description: Specifies how much the task will recur. `None` specifies no recurrence. `noEnd` specifies constant recurrence forever, based on the `interval` value. `until` specifies recurrence based on the `interval` value until the `endDate` is reached.
+                              interval:
+                                oneOf:
+                                  - type: integer
+                                    example: 3
+                                  - type: array
+                                    items:
+                                      type: string
+                                    example: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+                                description: If the `recurrenceRange` is set to `noEnd`, tasks will continue to be created based on the `interval` value. If an integer is provided, then a task will be created after every `interval` days. If an array if weekdays is provided, a task will be created on each weekday present in the array.
+                              endDate:
+                                type: integer
+                                example: 1713136359
+                                description: End date of the recurring task in epoch time.
+                          completed:
+                            type: boolean
+                            example: false
+                            description: Specifies if a task has been completed.
+                    feeds:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
                             type: integer
-                            example: 1713136359
-                            description: End date of the recurring task. Used when specifying when a recurring task should stop recurring.
-                    completed:
-                      type: boolean
-                      example: false
-                      description: Specifies if a task has been completed.
+                            example: 0
+                            description: Relative ID of the individual feed. Used to index feeds within the collection.
+                          title:
+                            type: string
+                            example: Harvard Health Blog
+                            description: Title of the feed.
+                          category:
+                            type: string
+                            example: Health
+                            description: Category of the feed.
+                          url:
+                            type: string
+                            example: https://www.health.harvard.edu/blog
+                            description: URL of the feed. Will be used to track changes made to the feed, and will allow the user to quickly open the URL of the feed in their browser.
+                          dateLastUpdated:
+                            type: integer
+                            example: 1727653702
+                            description: The date that StefansDroid last found a change made to the feed. 
+                          isUserUpToDate:
+                            type: boolean
+                            example: false
+                            description: If the user is has visited the feed since it last got updated.
+                            
 
       responses:
         200:
@@ -109,82 +144,86 @@ paths:
         409:
           description: Conflict
     put:
-      summary: Updates a task collection by ID.
+      summary: Updates a collection by ID.
       parameters:
-         - in: path
-           name: collectionId
-           required: true
-           type: string
-           description: Updates a task collection stored in the task storage server.
-         - in: body
-           name: body
-           description: JSON object containing the task collection.
-           required: true
-           schema:
-             type: object  # Define your JSON object schema here
-             required:
-               - id
-               - title
-               - completed
-             properties:
-               lastModified:
-                 type: integer
-                 example: 1711149159
-                 description: Date that the collection was last modified. Used for syncing.
-               tasks:
-                 type: array
-                 items:
-                   type: object
-                   properties:
-                     id:
-                       type: integer
-                       example: 0
-                       description: Relative ID of the individual task. Used to index tasks within the collection. 
-                     title:
-                       type: string
-                       example: Buy Bread
-                       description: Title of the task.
-                     description:
-                       type: string
-                       example: Buy some bread while grocery shopping. Preferably something sourdough or baguette.
-                       description: Description of the task.
-                     location:
-                       type: string
-                       example: Best Bread Bakery, Vaughan, ON A1A 1A1
-                       description: Location related to the task. Used to hyperlink a Maps location in a given task.
-                     category:
-                       type: string
-                       example: Grocery
-                       description: Category that the tasks belongs to. Used to organize tasks.
-                     dueDate:
-                       type: integer
-                       example: 1711149159
-                       description: Date that the task is "due". Used to organize time-sensitive tasks.
-                     recurrence:
-                       type: array
-                       items:
-                         type: object
-                         properties: 
-                           recurrenceRange:
-                             type: string
-                             enum:
-                               - noEnd
-                               - until
-                             example: noEnd
-                             description: Specifies how much the task will recur. `noEnd` means the task recur forever based on the `interval` value. `until` means the task will recur based on the `interval`, until the `endDate` is reached.
-                           interval:
-                             type: integer
-                             example: 10080
-                             description: The time between each task in the recurrence in minutes.
-                           endDate:
-                             type: integer
-                             example: 1713136359
-                             description: End date of the recurring task. Used when specifying when a recurring task should stop recurring.
-                     completed:
-                       type: boolean
-                       example: false
-                       description: Specifies if a task has been completed. 
-
+        - in: path
+          name: collectionId
+          required: true
+          schema:
+            type: string
+          description: Updates a collection stored on the server.
+      requestBody:  
+        description: JSON object containing the collection.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - title
+                - completed
+              properties:
+                lastModified:
+                  type: integer
+                  example: 1711149159
+                  description: Date that the collection was last modified. Used for syncing.
+                tasks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 0
+                        description: Relative ID of the individual task. Used to index tasks within the collection. 
+                      title:
+                        type: string
+                        example: Buy Bread
+                        description: Title of the task.
+                      description:
+                        type: string
+                        example: Buy some bread while grocery shopping. Preferably something sourdough or baguette.
+                        description: Description of the task.
+                      location:
+                        type: string
+                        example: Best Bread Bakery, Vaughan, ON A1A 1A1
+                        description: Location related to the task. Used to hyperlink a Maps location in a given task.
+                      category:
+                        type: string
+                        example: Grocery
+                        description: Category that the tasks belong to. Used to organize tasks.
+                      dueDate:
+                        type: integer
+                        example: 1711149159
+                        description: Date that the task is "due". Used to organize time-sensitive tasks.
+                      recurrence:
+                        type: object
+                        properties: 
+                          recurrenceRange:
+                            type: string
+                            enum:
+                              - none
+                              - noEnd
+                              - until
+                            description: Specifies how much the task will recur. `noEnd` means the task recur forever based on the `interval` value. `until` means the task will recur based on the `interval`, until the `endDate` is reached.
+                          interval:
+                            oneOf:
+                              - type: integer
+                                example: 3
+                              - type: array
+                                items:
+                                  type: string
+                                example: ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+                            description: If the `recurrenceRange` is set to `noEnd`, tasks will continue to be created based on the `interval` value. If an integer is provided, then a task will be created after every `interval` days. If an array if weekdays is provided, a task will be created on each weekday present in the array.
+                          endDate:
+                            type: integer
+                            example: 1713136359
+                            description: End date of the recurring task. Used when specifying when a recurring task should stop recurring.
+                      completed:
+                        type: boolean
+                        example: false
+                        description: Specifies if a task has been completed.
       responses:
         200:
           description: OK
@@ -193,13 +232,14 @@ paths:
         404:
           description: Not found
     delete:
-      summary: Deletes a task collection by ID.
+      summary: Deletes a collection by ID.
       parameters:
         - in: path
           name: collectionId
           required: true
-          type: string
-          description: Deletes a task collection stored in the task storage server.
+          schema:
+            type: string
+          description: Deletes a collection stored on the server.
       responses:
         200:
           description: OK
